@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="dark">
+    <head>
+        <!-- Definições de metadados e responsividade -->
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NexosCode: crie sites e documentos com facilidade</title>
+
+        <!-- CSS do Bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+
+        <!-- CSS de animações -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+        <!-- Fontes do Google -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,800;1,800&display=swap" rel="stylesheet" />
+
+        <!-- Ícones Feather -->
+        <script src="https://unpkg.com/feather-icons"></script>
+
+        <!-- Mapeamento de módulos para a API do Google Generative AI -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "@google/generative-ai": "https://esm.run/@google/generative-ai"
+                }
+            }
+        </script>
+
+        <!-- CSS para o highlight de código -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
+
+        <!-- Estilos customizados -->
+        <style>
+            /* Estilo global do corpo da página */
+            body {
+                font-family: "Roboto", sans-serif;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: #121212;
+            }
+
+            /* Container do chat */
+            #chat-container {
+                border-radius: 8px;
+                padding: 20px;
+                margin-top: 30px;
+                display: flex;
+                flex-direction: column;
+                max-height: 60vh;
+                box-shadow: 0 0 50rem rgba(25, 135, 84, 0.4);
+                background-color: #21252977;
+            }
+
+            /* Histórico de mensagens */
+            #chat-history {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding-bottom: 10px;
+            }
+
+            /* Título da página */
+            .title {
+                font-family: "Montserrat", sans-serif;
+                font-weight: 800;
+                font-size: 40pt;
+                text-align: center;
+            }
+
+            /* Estilos base para as mensagens */
+            .message {
+                padding: 10px 15px;
+                margin-bottom: 10px;
+                border-radius: 8px;
+                position: relative; /* Permite posicionamento de elementos internos, como a notificação de cópia */
+            }
+
+            /* Mensagens enviadas pelo usuário */
+            .user-message {
+                background-image: linear-gradient(to right, rgba(25, 196, 136, 0.8), rgba(25, 135, 84, 0.8));
+                border: 2px solid rgb(25, 135, 84);
+                color: #fff;
+            }
+
+            /* Mensagens geradas pela IA */
+            .ai-message {
+                background: rgba(52, 58, 64, 0.4);
+                border: 2px solid rgba(173, 181, 189, 0.2);
+                color: #fff;
+            }
+
+            /* Área de input do chat */
+            .chat-input-area {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            /* Botão de envio */
+            .btn-outline-success {
+                background: rgba(25, 135, 84, 0.2);
+                border: 2px solid rgba(25, 135, 84, 0.2);
+            }
+
+            /* Campo de texto */
+            .form-control {
+                background-color: #21252977;
+                border: 2px solid #f8f9fa2a;
+                max-height: 30vh;
+                color: #fff;
+            }
+            .form-control:focus {
+                border-color: rgb(25, 135, 84);
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.3);
+            }
+
+            /* Container para o fundo animado */
+            #background-container {
+                position: fixed;
+                top: -10%;
+                left: -10%;
+                width: 120%;
+                height: 120%;
+                overflow: hidden;
+                filter: blur(10vw);
+                z-index: -1;
+            }
+
+            /* Estilo das formas animadas */
+            .shape {
+                position: absolute;
+                animation-name: move;
+                animation-timing-function: linear;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+                will-change: transform, opacity;
+            }
+            @keyframes move {
+                0% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+                25% {
+                    transform: translate(20vw, 30vh) rotate(90deg);
+                }
+                50% {
+                    transform: translate(-15vw, 50vh) rotate(180deg);
+                }
+                75% {
+                    transform: translate(30vw, -20vh) rotate(270deg);
+                }
+                100% {
+                    transform: translate(0, 0) rotate(360deg);
+                }
+            }
+
+            /* Animação customizada para o título */
+            .animate__zoomInDown {
+                --animate-duration: 2s;
+            }
+
+            /* Notificação de cópia de código */
+            .copy-message {
+                position: absolute;
+                top: 5px; /* Posiciona acima do botão */
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(25, 135, 84, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 5px;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out;
+                z-index: 1000;
+                font-size: 0.9em;
+            }
+            .copy-message.show {
+                opacity: 1;
+            }
+
+            /* Texto informativo e créditos */
+            .site-info {
+                font-size: 0.8rem;
+                color: #adb5bd;
+                text-align: center;
+                margin-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Fundo animado -->
+        <div id="background-container"></div>
+
+        <!-- Container principal -->
+        <div class="container animate__animated animate__fadeInDown">
+            <!-- Título do site -->
+            <h1 class="title animate__animated animate__zoomInDown">
+                <span class="text-success">NEXOS</span>
+                <span style="opacity: 0.8">CODE</span>
+            </h1>
+
+            <!-- Container do chat -->
+            <div id="chat-container">
+                <div id="chat-history"></div>
+                <div class="chat-input-area">
+                    <textarea id="user-input" class="form-control" placeholder="Digite sua mensagem..." aria-label="Digite sua mensagem" rows="1"></textarea>
+                    <button id="send-button" class="btn btn-outline-success" aria-label="Enviar">
+                        <i data-feather="send"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Créditos e informações -->
+            <p class="site-info">
+                Um espaço para conversas inovadoras.<br />
+                &copy; L7 - Luís Fernando
+            </p>
+        </div>
+
+        <!-- Scripts do Bootstrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+        <!-- Script do Highlight.js para destaque de código -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+        <!-- Script principal (módulo ES) -->
+        <script type="module">
+            import { GoogleGenerativeAI } from "@google/generative-ai";
+
+            // Inicializa os ícones Feather
+            feather.replace();
+
+            // Seleção dos elementos da interface
+            const chatHistory = document.getElementById("chat-history");
+            const userInput = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
+
+            // Configuração da API (substitua pela sua chave real)
+            const geminiApiKey = "AIzaSyAbzP5WmodIH4VIMw_cs9jrWkslcPiR0vE";
+            const genAI = new GoogleGenerativeAI(geminiApiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro-exp-03-25" });
+
+            /**
+             * Adiciona uma mensagem ao histórico.
+             * @param {string} sender - 'user' ou 'ai'
+             * @param {string} message - Conteúdo da mensagem
+             */
+            const appendMessage = (sender, message) => {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message", "animate__animated", "animate__fadeIn", "p-2", "rounded");
+
+                if (sender === "user") {
+                    messageDiv.classList.add("user-message", "text-start");
+                    messageDiv.innerHTML = `<p class="mb-0">${message}</p>`;
+                } else if (sender === "ai") {
+                    messageDiv.classList.add("ai-message", "text-start");
+                    const preElement = document.createElement("pre");
+                    preElement.classList.add("mb-0");
+                    preElement.textContent = message;
+                    messageDiv.appendChild(preElement);
+                }
+
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            };
+
+            /**
+             * Adiciona uma mensagem de resposta da IA com botões para abrir e copiar o HTML gerado.
+             * Cria também a notificação de "Código copiado!".
+             * @param {string} htmlCode - Código HTML gerado pela IA
+             */
+            const appendAiMessageWithLink = htmlCode => {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message", "ai-message", "text-start", "animate__animated", "animate__fadeIn", "p-2", "rounded");
+
+                // Cria o elemento de código com destaque
+                const preElement = document.createElement("pre");
+                const codeElement = document.createElement("code");
+                codeElement.classList.add("html", "rounded");
+                codeElement.textContent = htmlCode;
+                preElement.appendChild(codeElement);
+                messageDiv.appendChild(preElement);
+
+                // Cria container para os botões
+                const buttonsContainer = document.createElement("div");
+                buttonsContainer.classList.add("d-flex", "align-items-center", "mt-2");
+
+                // Botão para abrir a página gerada em nova aba
+                const linkButton = document.createElement("button");
+                linkButton.classList.add("btn", "btn-outline-success", "btn-sm", "me-2");
+                linkButton.innerHTML = '<i data-feather="external-link"></i> Abrir Página Gerada';
+                linkButton.addEventListener("click", () => {
+                    const blob = new Blob([htmlCode], { type: "text/html" });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, "_blank");
+                });
+                buttonsContainer.appendChild(linkButton);
+
+                // Botão para copiar o código HTML
+                const copyButton = document.createElement("button");
+                copyButton.classList.add("btn", "btn-outline-success", "btn-sm");
+                copyButton.innerHTML = '<i data-feather="copy"></i> Copiar HTML';
+                copyButton.addEventListener("click", () => {
+                    // Utiliza o conteúdo do código para copiar
+                    navigator.clipboard
+                        .writeText(codeElement.textContent)
+                        .then(() => {
+                            // Cria e exibe a notificação de cópia
+                            const copyNotification = document.createElement("div");
+                            copyNotification.classList.add("copy-message", "show");
+                            copyNotification.textContent = "Código copiado!";
+                            // Posiciona a notificação relativa ao botão de cópia
+                            copyButton.parentElement.appendChild(copyNotification);
+                            // Remove a notificação após 2 segundos
+                            setTimeout(() => {
+                                copyNotification.classList.remove("show");
+                                copyNotification.remove();
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error("Falha ao copiar o HTML: ", err);
+                        });
+                });
+                buttonsContainer.appendChild(copyButton);
+                messageDiv.appendChild(buttonsContainer);
+
+                // Insere a mensagem na interface e atualiza o scroll
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                // Atualiza os ícones Feather e aplica o destaque de código
+                feather.replace();
+                hljs.highlightElement(codeElement);
+            };
+
+            /**
+             * Exibe um indicador de carregamento enquanto aguarda a resposta da API.
+             * @returns {HTMLElement} Elemento do indicador de carregamento
+             */
+            const showLoadingIndicator = () => {
+                const loadingIndicator = document.createElement("div");
+                loadingIndicator.classList.add("message", "ai-message", "text-start", "animate__animated", "animate__fadeIn", "bg-body-secondary", "text-white", "p-2", "rounded");
+                loadingIndicator.id = "loading-indicator";
+                loadingIndicator.innerHTML = `
+          <div class="d-flex align-items-center">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Carregando...</span>
+          </div>
+        `;
+                chatHistory.appendChild(loadingIndicator);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                return loadingIndicator;
+            };
+
+            /**
+             * Função responsável por enviar a mensagem do usuário e tratar a resposta da IA.
+             */
+            const sendMessage = async () => {
+                const prompt = userInput.value.trim();
+                if (!prompt) return;
+
+                // Adiciona a mensagem do usuário no histórico e limpa o campo de input
+                appendMessage("user", prompt);
+                userInput.value = "";
+
+                // Exibe o indicador de carregamento
+                const loadingIndicator = showLoadingIndicator();
+
+                try {
+                    // Prompt detalhado para a geração do código HTML
+                    const detailedPrompt = `Gere o código HTML completo para a seguinte página web:
+
+${prompt}
+
+Retorne APENAS o código HTML puro, iniciando com <!DOCTYPE html> e terminando com </html>. NÃO utilize qualquer formatação Markdown, símbolos ou blocos de código, como \`\`\` ou \`\`\`html, ou quaisquer outros delimitadores de código. Responda apenas com o texto do código HTML, sem nenhuma explicação ou marcação adicional.`;
+
+                    // Chamada à API para geração do conteúdo
+                    const result = await model.generateContent(detailedPrompt);
+                    const response = await result.response;
+                    const htmlCode = response.candidates[0].content.parts[0].text;
+
+                    // Remove o indicador de carregamento e exibe a resposta
+                    loadingIndicator.remove();
+                    appendAiMessageWithLink(htmlCode);
+                } catch (error) {
+                    console.error("Erro ao chamar a API Gemini:", error);
+                    loadingIndicator.remove();
+                    appendMessage("ai", "Desculpe, ocorreu um erro ao gerar o HTML.");
+                }
+            };
+
+            // Eventos: clique no botão de envio e pressionar "Enter" (sem shift) no textarea
+            sendButton.addEventListener("click", sendMessage);
+            userInput.addEventListener("keypress", event => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            /**
+             * Cria formas animadas de fundo com variações aleatórias de tamanho, posição,
+             * opacidade e duração da animação.
+             */
+            document.addEventListener("DOMContentLoaded", () => {
+                const container = document.getElementById("background-container");
+                const numberOfShapes = 30; // Número de formas a serem criadas
+
+                for (let i = 0; i < numberOfShapes; i++) {
+                    const shape = document.createElement("div");
+                    shape.classList.add("shape");
+
+                    // Define tamanho aleatório entre 50px e 350px
+                    const size = Math.random() * 300 + 50;
+                    shape.style.width = `${size}px`;
+                    shape.style.height = `${size}px`;
+
+                    // Define posição inicial aleatória
+                    shape.style.top = `${Math.random() * 100}%`;
+                    shape.style.left = `${Math.random() * 100}%`;
+
+                    // Define borda arredondada aleatória (de quadrado a círculo)
+                    shape.style.borderRadius = `${Math.random() * 50}%`;
+
+                    // Define opacidade aleatória entre 0.1 e 0.5 e cor verde
+                    const opacity = Math.random() * 0.4 + 0.1;
+                    shape.style.backgroundColor = `rgba(25, 135, 84, ${opacity})`;
+
+                    // Define duração e delay aleatórios para a animação
+                    shape.style.animationDuration = `${Math.random() * 30 + 15}s`;
+                    shape.style.animationDelay = `${Math.random() * -30}s`;
+
+                    container.appendChild(shape);
+                }
+            });
+        </script>
+    </body>
+</html>
