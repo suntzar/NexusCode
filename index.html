@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR" data-bs-theme="dark">
     <head>
-        <!-- Definições de metadados e responsividade -->
+        <!-- Metadados e responsividade -->
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>NexosCode: crie sites e documentos com facilidade</title>
@@ -21,7 +21,7 @@
         <!-- Ícones Feather -->
         <script src="https://unpkg.com/feather-icons"></script>
 
-        <!-- Mapeamento de módulos para a API do Google Generative AI -->
+        <!-- ImportMap para a API do Google Generative AI -->
         <script type="importmap">
             {
                 "imports": {
@@ -35,16 +35,14 @@
 
         <!-- Estilos customizados -->
         <style>
-            /* Estilo global do corpo da página */
+            /* Estilo global */
             body {
                 font-family: "Roboto", sans-serif;
                 height: 100vh;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: #121212;
             }
-
             /* Container do chat */
             #chat-container {
                 border-radius: 8px;
@@ -56,58 +54,46 @@
                 box-shadow: 0 0 50rem rgba(25, 135, 84, 0.4);
                 background-color: #21252977;
             }
-
             /* Histórico de mensagens */
             #chat-history {
                 flex-grow: 1;
                 overflow-y: auto;
                 padding-bottom: 10px;
             }
-
-            /* Título da página */
+            /* Título */
             .title {
                 font-family: "Montserrat", sans-serif;
                 font-weight: 800;
                 font-size: 40pt;
                 text-align: center;
             }
-
-            /* Estilos base para as mensagens */
+            /* Mensagens */
             .message {
                 padding: 10px 15px;
                 margin-bottom: 10px;
                 border-radius: 8px;
-                position: relative; /* Permite posicionamento de elementos internos, como a notificação de cópia */
+                position: relative;
             }
-
-            /* Mensagens enviadas pelo usuário */
             .user-message {
                 background-image: linear-gradient(to right, rgba(25, 196, 136, 0.8), rgba(25, 135, 84, 0.8));
                 border: 2px solid rgb(25, 135, 84);
                 color: #fff;
             }
-
-            /* Mensagens geradas pela IA */
             .ai-message {
                 background: rgba(52, 58, 64, 0.4);
                 border: 2px solid rgba(173, 181, 189, 0.2);
                 color: #fff;
             }
-
-            /* Área de input do chat */
+            /* Área de input */
             .chat-input-area {
                 display: flex;
                 gap: 10px;
                 margin-top: 15px;
             }
-
-            /* Botão de envio */
             .btn-outline-success {
                 background: rgba(25, 135, 84, 0.2);
                 border: 2px solid rgba(25, 135, 84, 0.2);
             }
-
-            /* Campo de texto */
             .form-control {
                 background-color: #21252977;
                 border: 2px solid #f8f9fa2a;
@@ -118,86 +104,75 @@
                 border-color: rgb(25, 135, 84);
                 box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.3);
             }
-
-            /* Container para o fundo animado */
+            .animate__zoomInDown {
+                --animate-duration: 0;
+            }
+            /* Container de fundo: usa vw e vh para ocupar toda a tela */
             #background-container {
                 position: fixed;
-                top: -10%;
-                left: -10%;
-                width: 120%;
-                height: 120%;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
                 overflow: hidden;
                 filter: blur(10vw);
                 z-index: -1;
             }
-
-            /* Estilo das formas animadas */
-            .shape {
-                position: absolute;
-                animation-name: move;
-                animation-timing-function: linear;
-                animation-iteration-count: infinite;
-                animation-direction: alternate;
-                will-change: transform, opacity;
-            }
-            @keyframes move {
-                0% {
-                    transform: translate(0, 0) rotate(0deg);
-                }
-                25% {
-                    transform: translate(20vw, 30vh) rotate(90deg);
-                }
-                50% {
-                    transform: translate(-15vw, 50vh) rotate(180deg);
-                }
-                75% {
-                    transform: translate(30vw, -20vh) rotate(270deg);
-                }
-                100% {
-                    transform: translate(0, 0) rotate(360deg);
-                }
-            }
-
-            /* Animação customizada para o título */
-            .animate__zoomInDown {
-                --animate-duration: 2s;
-            }
-
-            /* Notificação de cópia de código */
-            .copy-message {
-                position: absolute;
-                top: 5px; /* Posiciona acima do botão */
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: rgba(25, 135, 84, 0.8);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 5px;
-                opacity: 0;
-                transition: opacity 0.3s ease-in-out;
-                z-index: 1000;
-                font-size: 0.9em;
-            }
-            .copy-message.show {
-                opacity: 1;
-            }
-
-            /* Texto informativo e créditos */
+            /* Créditos */
             .site-info {
                 font-size: 0.8rem;
                 color: #adb5bd;
                 text-align: center;
                 margin-top: 15px;
             }
+            /* Cada objeto (shape) será posicionado de forma absoluta */
+            .shape {
+                position: absolute;
+                will-change: transform, opacity;
+            }
+            /* Tela de carregamento */
+            .loader {
+                opacity: 0;
+                height: 240px;
+                position: absolute;
+                aspect-ratio: 1;
+                --g: /calc(30.259% + 5.027px) calc(30.259% + 5.027px) radial-gradient(#0000 calc(70% - 8px), #000 calc(71% - 8px) 70%, #0000 71%) no-repeat;
+                mask:
+                    radial-gradient(100% 100%, #000 calc((30.259% + 5.027px) / 0.964 - 8.306px), #0000 calc((30.259% + 5.027px) / 0.964 - 8.306px + 1px)) intersect,
+                    100% 50% var(--g),
+                    81.174% 89.092% var(--g),
+                    38.874% 98.746% var(--g),
+                    4.952% 71.694% var(--g),
+                    4.952% 28.306% var(--g),
+                    38.874% 1.254% var(--g),
+                    81.174% 10.908% var(--g);
+                filter: blur(12px);
+            }
+            .loader:before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: conic-gradient(#0000 35%, rgb(25, 135, 84), #0000 65%);
+                animation: l10 2s linear infinite;
+            }
+            @keyframes l10 {
+                to {
+                    rotate: 1turn;
+                }
+            }
+            #main * {
+                opacity: 1;
+            }
         </style>
     </head>
     <body>
+        <div class="loader"></div>
+
         <!-- Fundo animado -->
         <div id="background-container"></div>
 
         <!-- Container principal -->
-        <div class="container animate__animated animate__fadeInDown">
-            <!-- Título do site -->
+        <div id="main" class="container animate__animated animate__fadeInDown">
             <h1 class="title animate__animated animate__zoomInDown">
                 <span class="text-success">NEXOS</span>
                 <span style="opacity: 0.8">CODE</span>
@@ -207,16 +182,15 @@
             <div id="chat-container">
                 <div id="chat-history"></div>
                 <div class="chat-input-area">
-                    <textarea id="user-input" class="form-control" placeholder="Digite sua mensagem..." aria-label="Digite sua mensagem" rows="1"></textarea>
+                    <textarea id="user-input" class="form-control" placeholder="Descreva o que deseja criar..." aria-label="Digite sua mensagem" rows="2"></textarea>
                     <button id="send-button" class="btn btn-outline-success" aria-label="Enviar">
                         <i data-feather="send"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Créditos e informações -->
             <p class="site-info">
-                Um espaço para conversas inovadoras.<br />
+                Crie sites e documentos com facilidade utilizando nossa inteligência artificial.<br />
                 &copy; L7 - Luís Fernando
             </p>
         </div>
@@ -224,7 +198,7 @@
         <!-- Scripts do Bootstrap -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
-        <!-- Script do Highlight.js para destaque de código -->
+        <!-- Highlight.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
         <!-- Script principal (módulo ES) -->
@@ -234,21 +208,18 @@
             // Inicializa os ícones Feather
             feather.replace();
 
-            // Seleção dos elementos da interface
+            // Seleciona elementos da interface
             const chatHistory = document.getElementById("chat-history");
             const userInput = document.getElementById("user-input");
             const sendButton = document.getElementById("send-button");
+            const container = document.getElementById("background-container");
 
             // Configuração da API (substitua pela sua chave real)
             const geminiApiKey = "AIzaSyAbzP5WmodIH4VIMw_cs9jrWkslcPiR0vE";
             const genAI = new GoogleGenerativeAI(geminiApiKey);
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro-exp-03-25" });
 
-            /**
-             * Adiciona uma mensagem ao histórico.
-             * @param {string} sender - 'user' ou 'ai'
-             * @param {string} message - Conteúdo da mensagem
-             */
+            // Funções do chat
             const appendMessage = (sender, message) => {
                 const messageDiv = document.createElement("div");
                 messageDiv.classList.add("message", "animate__animated", "animate__fadeIn", "p-2", "rounded");
@@ -268,16 +239,10 @@
                 chatHistory.scrollTop = chatHistory.scrollHeight;
             };
 
-            /**
-             * Adiciona uma mensagem de resposta da IA com botões para abrir e copiar o HTML gerado.
-             * Cria também a notificação de "Código copiado!".
-             * @param {string} htmlCode - Código HTML gerado pela IA
-             */
             const appendAiMessageWithLink = htmlCode => {
                 const messageDiv = document.createElement("div");
                 messageDiv.classList.add("message", "ai-message", "text-start", "animate__animated", "animate__fadeIn", "p-2", "rounded");
 
-                // Cria o elemento de código com destaque
                 const preElement = document.createElement("pre");
                 const codeElement = document.createElement("code");
                 codeElement.classList.add("html", "rounded");
@@ -285,11 +250,9 @@
                 preElement.appendChild(codeElement);
                 messageDiv.appendChild(preElement);
 
-                // Cria container para os botões
                 const buttonsContainer = document.createElement("div");
                 buttonsContainer.classList.add("d-flex", "align-items-center", "mt-2");
 
-                // Botão para abrir a página gerada em nova aba
                 const linkButton = document.createElement("button");
                 linkButton.classList.add("btn", "btn-outline-success", "btn-sm", "me-2");
                 linkButton.innerHTML = '<i data-feather="external-link"></i> Abrir Página Gerada';
@@ -300,22 +263,17 @@
                 });
                 buttonsContainer.appendChild(linkButton);
 
-                // Botão para copiar o código HTML
                 const copyButton = document.createElement("button");
                 copyButton.classList.add("btn", "btn-outline-success", "btn-sm");
                 copyButton.innerHTML = '<i data-feather="copy"></i> Copiar HTML';
                 copyButton.addEventListener("click", () => {
-                    // Utiliza o conteúdo do código para copiar
                     navigator.clipboard
                         .writeText(codeElement.textContent)
                         .then(() => {
-                            // Cria e exibe a notificação de cópia
                             const copyNotification = document.createElement("div");
                             copyNotification.classList.add("copy-message", "show");
                             copyNotification.textContent = "Código copiado!";
-                            // Posiciona a notificação relativa ao botão de cópia
                             copyButton.parentElement.appendChild(copyNotification);
-                            // Remove a notificação após 2 segundos
                             setTimeout(() => {
                                 copyNotification.classList.remove("show");
                                 copyNotification.remove();
@@ -328,19 +286,12 @@
                 buttonsContainer.appendChild(copyButton);
                 messageDiv.appendChild(buttonsContainer);
 
-                // Insere a mensagem na interface e atualiza o scroll
                 chatHistory.appendChild(messageDiv);
                 chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                // Atualiza os ícones Feather e aplica o destaque de código
                 feather.replace();
                 hljs.highlightElement(codeElement);
             };
 
-            /**
-             * Exibe um indicador de carregamento enquanto aguarda a resposta da API.
-             * @returns {HTMLElement} Elemento do indicador de carregamento
-             */
             const showLoadingIndicator = () => {
                 const loadingIndicator = document.createElement("div");
                 loadingIndicator.classList.add("message", "ai-message", "text-start", "animate__animated", "animate__fadeIn", "bg-body-secondary", "text-white", "p-2", "rounded");
@@ -356,87 +307,185 @@
                 return loadingIndicator;
             };
 
-            /**
-             * Função responsável por enviar a mensagem do usuário e tratar a resposta da IA.
-             */
             const sendMessage = async () => {
                 const prompt = userInput.value.trim();
                 if (!prompt) return;
-
-                // Adiciona a mensagem do usuário no histórico e limpa o campo de input
                 appendMessage("user", prompt);
                 userInput.value = "";
 
-                // Exibe o indicador de carregamento
                 const loadingIndicator = showLoadingIndicator();
-
                 try {
-                    // Prompt detalhado para a geração do código HTML
                     const detailedPrompt = `Gere o código HTML completo para a seguinte página web:
 
 ${prompt}
 
-Retorne APENAS o código HTML puro, iniciando com <!DOCTYPE html> e terminando com </html>. NÃO utilize qualquer formatação Markdown, símbolos ou blocos de código, como \`\`\` ou \`\`\`html, ou quaisquer outros delimitadores de código. Responda apenas com o texto do código HTML, sem nenhuma explicação ou marcação adicional.`;
-
-                    // Chamada à API para geração do conteúdo
+Retorne APENAS o código HTML puro, iniciando com <!DOCTYPE html> e terminando com </html>. Não inclua explicações.`;
                     const result = await model.generateContent(detailedPrompt);
                     const response = await result.response;
                     const htmlCode = response.candidates[0].content.parts[0].text;
-
-                    // Remove o indicador de carregamento e exibe a resposta
                     loadingIndicator.remove();
                     appendAiMessageWithLink(htmlCode);
                 } catch (error) {
-                    console.error("Erro ao chamar a API Gemini:", error);
+                    console.error("Erro na API Gemini:", error);
                     loadingIndicator.remove();
                     appendMessage("ai", "Desculpe, ocorreu um erro ao gerar o HTML.");
                 }
             };
 
-            // Eventos: clique no botão de envio e pressionar "Enter" (sem shift) no textarea
             sendButton.addEventListener("click", sendMessage);
-            userInput.addEventListener("keypress", event => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    sendMessage();
+
+            /* 
+        Movimento global (fluido) baseado em interação do usuário
+      */
+            let targetOffset = { x: 0, y: 0 };
+            let currentOffset = { x: 0, y: 0 };
+
+            const updateTargetOffset = (clientX, clientY) => {
+                const x = clientX / window.innerWidth - 0.5;
+                const y = clientY / window.innerHeight - 0.5;
+                targetOffset.x = x * 300;
+                targetOffset.y = y * 300;
+            };
+
+            document.addEventListener("mousemove", e => {
+                updateTargetOffset(e.clientX, e.clientY);
+            });
+            document.addEventListener("touchmove", e => {
+                if (e.touches && e.touches.length > 0) {
+                    updateTargetOffset(e.touches[0].clientX, e.touches[0].clientY);
                 }
             });
 
-            /**
-             * Cria formas animadas de fundo com variações aleatórias de tamanho, posição,
-             * opacidade e duração da animação.
-             */
-            document.addEventListener("DOMContentLoaded", () => {
-                const container = document.getElementById("background-container");
-                const numberOfShapes = 30; // Número de formas a serem criadas
+            /* 
+        Integração do giroscópio com suavização dos ângulos:
+        Utiliza uma interpolação especial (lerpAngle) para evitar saltos bruscos quando os ângulos passam de 360° para 0°.
+      */
+            let smoothedGamma = 0,
+                smoothedBeta = 0;
 
+            function lerpAngle(a, b, t) {
+                let diff = ((b - a + 180) % 360) - 180;
+                return a + diff * t;
+            }
+
+            function handleOrientation(e) {
+                // Obtém os novos valores dos ângulos
+                const newGamma = e.gamma;
+                const newBeta = e.beta;
+
+                // Atualiza os ângulos suavizados com um fator de interpolação
+                smoothedGamma = lerpAngle(smoothedGamma, newGamma, 0.1);
+                smoothedBeta = lerpAngle(smoothedBeta, newBeta, 0.1);
+
+                // Normaliza os ângulos para valores entre -1 e 1
+                const x = smoothedGamma / 90; // Considerando faixa aproximada de -90 a 90
+                const y = smoothedBeta / 180; // Considerando faixa aproximada de -180 a 180
+
+                targetOffset.x = x * 300;
+                targetOffset.y = y * 300;
+            }
+
+            if (window.DeviceOrientationEvent) {
+                // Em dispositivos iOS 13+ é necessário solicitar permissão
+                if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === "granted") {
+                                window.addEventListener("deviceorientation", handleOrientation);
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    window.addEventListener("deviceorientation", handleOrientation);
+                }
+            }
+
+            /* 
+        Cada shape terá propriedades individuais:
+        - sensitivity: quanto ele reage ao movimento global
+        - shakeOffset / shakeVelocity: para o efeito de agitação
+        - driftOffset / driftTarget: para movimento aleatório próprio
+      */
+            const shapesData = [];
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const numberOfShapes = 30; // Você pode aumentar esse número se desejar
                 for (let i = 0; i < numberOfShapes; i++) {
                     const shape = document.createElement("div");
                     shape.classList.add("shape");
 
-                    // Define tamanho aleatório entre 50px e 350px
                     const size = Math.random() * 300 + 50;
                     shape.style.width = `${size}px`;
                     shape.style.height = `${size}px`;
-
-                    // Define posição inicial aleatória
                     shape.style.top = `${Math.random() * 100}%`;
                     shape.style.left = `${Math.random() * 100}%`;
-
-                    // Define borda arredondada aleatória (de quadrado a círculo)
                     shape.style.borderRadius = `${Math.random() * 50}%`;
-
-                    // Define opacidade aleatória entre 0.1 e 0.5 e cor verde
                     const opacity = Math.random() * 0.4 + 0.1;
                     shape.style.backgroundColor = `rgba(25, 135, 84, ${opacity})`;
 
-                    // Define duração e delay aleatórios para a animação
-                    shape.style.animationDuration = `${Math.random() * 30 + 15}s`;
-                    shape.style.animationDelay = `${Math.random() * -30}s`;
-
                     container.appendChild(shape);
+
+                    shapesData.push({
+                        element: shape,
+                        sensitivity: Math.random() * 1 + 0.5, // de 0.5 a 1.5
+                        shakeOffset: { x: 0, y: 0 },
+                        shakeVelocity: { x: 0, y: 0 },
+                        driftOffset: { x: 0, y: 0 },
+                        driftTarget: {
+                            x: (Math.random() - 0.5) * 20,
+                            y: (Math.random() - 0.5) * 20
+                        }
+                    });
                 }
             });
+
+            // Ao clicar ou tocar, cada shape recebe um impulso de shake individual
+            const triggerShake = () => {
+                shapesData.forEach(shapeData => {
+                    shapeData.shakeVelocity.x += (Math.random() - 0.5) * 20;
+                    shapeData.shakeVelocity.y += (Math.random() - 0.5) * 20;
+                });
+            };
+            document.addEventListener("click", triggerShake);
+            document.addEventListener("touchstart", triggerShake);
+
+            // Atualiza o drift individual dos shapes
+            function updateDrift(shapeData) {
+                shapeData.driftOffset.x += (shapeData.driftTarget.x - shapeData.driftOffset.x) * 0.005;
+                shapeData.driftOffset.y += (shapeData.driftTarget.y - shapeData.driftOffset.y) * 0.005;
+                if (Math.random() < 0.005) {
+                    shapeData.driftTarget.x = (Math.random() - 0.5) * 200;
+                    shapeData.driftTarget.y = (Math.random() - 0.5) * 200;
+                }
+            }
+
+            // Laço de animação que atualiza os movimentos de cada shape
+            function animate() {
+                // Movimento global fluido (interpola suavemente o targetOffset)
+                currentOffset.x += (targetOffset.x - currentOffset.x) * 0.1;
+                currentOffset.y += (targetOffset.y - currentOffset.y) * 0.1;
+
+                shapesData.forEach(shapeData => {
+                    // Atualiza shake individual com inércia
+                    shapeData.shakeOffset.x += shapeData.shakeVelocity.x;
+                    shapeData.shakeOffset.y += shapeData.shakeVelocity.y;
+                    shapeData.shakeVelocity.x *= 0.9;
+                    shapeData.shakeVelocity.y *= 0.9;
+                    shapeData.shakeOffset.x *= 0.9;
+                    shapeData.shakeOffset.y *= 0.9;
+
+                    // Atualiza o drift individual
+                    updateDrift(shapeData);
+
+                    // Combina movimento global, shake e drift, multiplicado pela sensibilidade do shape
+                    const finalX = currentOffset.x * shapeData.sensitivity + shapeData.shakeOffset.x + shapeData.driftOffset.x;
+                    const finalY = currentOffset.y * shapeData.sensitivity + shapeData.shakeOffset.y + shapeData.driftOffset.y;
+                    shapeData.element.style.transform = `translate(${finalX}px, ${finalY}px)`;
+                });
+
+                requestAnimationFrame(animate);
+            }
+            animate();
         </script>
     </body>
 </html>
